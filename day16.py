@@ -3,6 +3,7 @@ import math
 from collections import deque
 from typing import List
 
+
 # BEGIN: DATAMODEL
 class Packet:
     def __init__(self, version):
@@ -27,6 +28,8 @@ class Expression(Packet):
     def get_value(self) -> int:
         # TODO: implement value here
         raise ValueError("Not yet implemented")
+
+
 # END: DATAMODEL
 
 
@@ -57,7 +60,7 @@ def read_operator(input_data: str) -> (List[Packet], int):
     length_type_id = int(input_data[0], 2)
     bit_progress += 1
     if length_type_id == 0:
-        total_length = bit_progress + 15 + int(input_data[bit_progress:bit_progress+15], 2)
+        total_length = bit_progress + 15 + int(input_data[bit_progress:bit_progress + 15], 2)
         bit_progress += 15
         sub_packets = []
         while bit_progress < total_length:
@@ -66,7 +69,7 @@ def read_operator(input_data: str) -> (List[Packet], int):
             sub_packets.append(sub_packet)
         return sub_packets, bit_progress
     else:
-        sub_packet_count = int(input_data[bit_progress:bit_progress+11], 2)
+        sub_packet_count = int(input_data[bit_progress:bit_progress + 11], 2)
         bit_progress += 11
         sub_packets = []
         for i in range(sub_packet_count):
@@ -182,13 +185,13 @@ def calculate_expression(packet: Packet) -> int:
 
 
 if __name__ == '__main__':
-    # This is day 16
+    # This is day 16 (with a 'little' bit of help from Lex van der Stoep)
     filename = "input/input16.txt"
     data = read_input_file(filename)
     data_binary = hexadecimal_to_binary(data)
 
-    print(f'input string= {data_binary}')
+    print(f'input string= {data}')
+    print(f'input binary string= {data_binary}')
     packet, _ = decode_packet(data_binary)
-    # print(packet)
-    print(f'sum of versions: {get_version_sum(packet)}')
-    print(f'value of expression: {calculate_expression(packet)}')
+    print(f'part1: sum of versions= {get_version_sum(packet)}')
+    print(f'part2: value of expression= {calculate_expression(packet)}')
