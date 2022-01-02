@@ -34,12 +34,7 @@ def calc_new_position_and_velocity(x, y, vx, vy):
     return xnew, ynew, vxnew, vynew
 
 
-if __name__ == '__main__':
-    # This is day
-    filename = "input/input17.txt"
-    xmin, xmax, ymin, ymax = read_input_file(filename)
-
-    print(xmin, xmax, ymin, ymax)
+def calc_trajectory(xmin, xmax, ymin, ymax):
     overall_max_height = 0
     number_of_solutions = 0
     for vx_start in range(0, xmax + 1):
@@ -56,12 +51,22 @@ if __name__ == '__main__':
                 if xmin <= x <= xmax and ymin <= y <= ymax:
                     inside_target = True
                     number_of_solutions += 1
-                    print(f'vx, vy, max height= {vx_start}, {vy_start}, {max_height}')
+                    # print(f'vx, vy, max height= {vx_start}, {vy_start}, {max_height}')
                     if max_height > overall_max_height:
                         overall_max_height = max_height
                         vx_opt, vy_opt = vx_start, vy_start
 
                 if x > xmax or y < ymin:
                     break
-    print(f'overall max height, vx, vy = {overall_max_height}, {vx_opt}, {vy_opt}')
-    print(f'number of solutions: {number_of_solutions}')
+    return vx_opt, vy_opt, overall_max_height, number_of_solutions
+
+
+if __name__ == '__main__':
+    # This is day 17
+    filename = "input/input17.txt"
+    xmin, xmax, ymin, ymax = read_input_file(filename)
+
+    vx_opt, vy_opt, overall_max_height, number_of_solutions = calc_trajectory(xmin, xmax, ymin, ymax)
+
+    print(f'part1: overall max height, vx, vy = {overall_max_height}, {vx_opt}, {vy_opt}')
+    print(f'part2: number of solutions= {number_of_solutions}')
