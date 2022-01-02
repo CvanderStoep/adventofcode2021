@@ -6,7 +6,7 @@ def read_input_file(input_file):
     with open(input_file) as f:
         content = f.read().splitlines()
 
-    output_values = []
+    # output_values = []
     for line in content:
         # output_values.append(line)
         # output_values.append(list(map(int, list(line))))
