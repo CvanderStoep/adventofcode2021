@@ -1,6 +1,4 @@
-import itertools
 import math
-from collections import deque
 from typing import List
 
 
@@ -147,17 +145,23 @@ def get_version_sum(packet: Packet) -> int:
 
 def calculate_expression(packet: Packet) -> int:
     if isinstance(packet, Literal):
-        return packet.value
+        # print(packet.value, end=" ")
+        return packet.get_value()
     elif isinstance(packet, Expression):
         if packet.type_id == 0:
+            # print('sum', end=" ")
             return sum(calculate_expression(sub_packet) for sub_packet in packet.sub_packets)
         elif packet.type_id == 1:
+            # print('product', end=" ")
             return math.prod(calculate_expression(sub_packet) for sub_packet in packet.sub_packets)
         elif packet.type_id == 2:
+            # print('minimum', end=" ")
             return min(calculate_expression(sub_packet) for sub_packet in packet.sub_packets)
         elif packet.type_id == 3:
+            # print('maximum', end=" ")
             return max(calculate_expression(sub_packet) for sub_packet in packet.sub_packets)
         elif packet.type_id == 5:
+            # print('greater than', end=" ")
             sub_packet1 = packet.sub_packets[0]
             sub_packet2 = packet.sub_packets[1]
             if calculate_expression(sub_packet1) > calculate_expression(sub_packet2):
@@ -165,6 +169,7 @@ def calculate_expression(packet: Packet) -> int:
             else:
                 return 0
         elif packet.type_id == 6:
+            # print('less then', end=" ")
             sub_packet1 = packet.sub_packets[0]
             sub_packet2 = packet.sub_packets[1]
             if calculate_expression(sub_packet1) < calculate_expression(sub_packet2):
@@ -172,13 +177,13 @@ def calculate_expression(packet: Packet) -> int:
             else:
                 return 0
         elif packet.type_id == 7:
+            # print('equals', end=" ")
             sub_packet1 = packet.sub_packets[0]
             sub_packet2 = packet.sub_packets[1]
             if calculate_expression(sub_packet1) == calculate_expression(sub_packet2):
                 return 1
             else:
                 return 0
-
 
         else:
             raise ValueError("Unrecognised packet type")

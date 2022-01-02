@@ -10,3 +10,4 @@
 
 # Virtual environment
 venv/
+input/*test*
