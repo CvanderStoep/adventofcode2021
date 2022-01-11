@@ -4,14 +4,18 @@ from collections import deque
 
 
 class SnailFishNumber:
-    def __init__(self, left=None, right=None):
+    def __init__(self, left=None, right=None, level=0, parent=None, exploded=False, position=0):
         self.left = left
         self.right = right
+        self.level = level
+        self.parent = parent
+        self.exploded = exploded
+        self.position = position
 
     def get_nested_level(self):
 
         if isinstance(self.left, int) and isinstance(self.right, int):
-            return 1
+            return 0
         elif isinstance(self.left, int):
             return 1 + self.right.get_nested_level()
         elif isinstance(self.right, int):
@@ -19,48 +23,122 @@ class SnailFishNumber:
         else:
             return 1 + max(self.left.get_nested_level(), self.right.get_nested_level())
 
+    def set_node_levels(self, level=0):
 
-stack = deque()
-def get_snailfish_level(input_list):
+        if isinstance(self.left, SnailFishNumber):
+            self.left.parent = self
+        if isinstance(self.right, SnailFishNumber):
+            self.right.parent = self
+
+        if isinstance(self.left, SnailFishNumber):
+            self.left.position -= 1
+            self.left.level = self.level + 1
+            self.left.set_node_levels(self.left.level)
+        if isinstance(self.right, SnailFishNumber):
+            self.right.position += 1
+            self.right.level = self.level + 1
+            self.right.set_node_levels(self.right.level)
+
+    def inorderTraversal(self):
+        output = []
+        if isinstance(self.left, int) and isinstance(self.right, int):
+            output = [self.left, self.right]
+        elif isinstance(self.left, int):
+            output = [self.left, self.right.inorderTraversal()]
+        elif isinstance(self.right, int):
+            output = [self.left.inorderTraversal(), self.right]
+        else:
+            output = [self.left.inorderTraversal(), self.right.inorderTraversal()]
+        return output
+
+    def inorderTraversal_print(self):
+
+        if isinstance(self.left, int):
+            print(self.left, end=' , ')
+        else:
+            self.left.inorderTraversal_print()
+        if isinstance(self.right, int):
+            print(self.right, end=' , ')
+        else:
+            self.right.inorderTraversal_print()
+
+    def explode(self):
+
+        if self.level == 3:
+            root_node = self.parent.parent.parent
+            print('level 3 reached')
+            if isinstance(self.left, int) and isinstance(self.right, int):
+                print('no further levels below')
+            elif root_node.exploded:
+                print('already exploded')
+            elif isinstance(self.left, SnailFishNumber):
+                print('level to explode reached, left = snf')
+                root_node.exploded = True
+                old_left = self.left.left
+                old_right = self.left.right
+
+                self.right = self.right + self.left.right
+                node_up = self.parent
+                for _ in range(3):
+                    if isinstance(node_up.left, int):
+                        node_up.left += self.left.left
+                        print('hier1')
+                        break
+                    node_up = node_up.parent
+                # Down from root node to find first integer on the left
+                # if isinstance(root_node.left, SnailFishNumber):
+                #     root_node = root_node.left
+                #     for _ in range(3):
+                #         if isinstance(root_node.right, int):
+                #             root_node.right += old_left
+                #             break
+                #         root_node = root_node.left
+                self.left = 0
+            elif isinstance(self.right, SnailFishNumber):
+                print('level to explode reached, right = sfn')
+                root_node.exploded = True
+                old_left = self.right.left
+                old_right = self.right.right
+                self.left = self.left + self.right.left
+                node_up = self.parent
+                for _ in range(3):
+                    if isinstance(node_up.right, int):
+                        node_up.right += self.right.right
+                        print('hier2')
+                        break
+                    node_up = node_up.parent
+                # Down from root node to find first integer on the right
+                # root_node = self.parent.parent.parent
+                # if isinstance(root_node.right, SnailFishNumber) :
+                #     root_node = root_node.right
+                #     for _ in range(3):
+                #         if isinstance(root_node.left, int):
+                #             root_node.left += old_right
+                #             break
+                #         root_node = root_node.left
+                self.right = 0
+            else:
+                print('level > 4?')
+        else:
+            if isinstance(self.left, SnailFishNumber):
+                self.left.explode()
+            if isinstance(self.right, SnailFishNumber):
+                self.right.explode()
+
+
+def convert_list_to_snailfish(input_list):
     left_elem = input_list[0]
     right_elem = input_list[1]
-    print(f'stack= {stack}')
-    print(f'left | right= {left_elem} | {right_elem}')
 
     if isinstance(left_elem, int) and isinstance(right_elem, int):
-        depth = 0
-        return depth
+        return SnailFishNumber(left_elem, right_elem)
     elif isinstance(left_elem, int):
-        stack.append(['left', left_elem])
-        depth = 1 + get_snailfish_level(right_elem)
-        if depth == 4:
-            print(f'explode {explode(left_elem, right_elem, None)}')
-        return depth
+        return SnailFishNumber(left_elem, convert_list_to_snailfish(right_elem))
     elif isinstance(right_elem, int):
-        stack.append(['right', right_elem])
-        depth = 1 + get_snailfish_level(left_elem)
-        if depth == 4:
-            print(f'explode {explode(None, left_elem, right_elem)}')
-        return depth
+        return SnailFishNumber(convert_list_to_snailfish(left_elem), right_elem)
     else:
-        depth = 1 + max((get_snailfish_level(left_elem)), (get_snailfish_level(right_elem)))
-        return depth
-
-
-def explode(left=None, input_pair=None, right=None):
-    print(f'left | input pair | right=  {left} | {input_pair} | {right}')
-    if left is None:
-        output_list = [0, input_pair[1] + right]
-    else:
-        output_list = [input_pair[0] + left, 0]
-    stack.pop()
-    for i in range(3):
-        pos, elem = stack.pop()
-        if pos == 'right':
-            output_list = [output_list] + [elem]
-        else:
-            output_list = [elem] + [output_list]
-    return output_list
+        return SnailFishNumber(convert_list_to_snailfish(left_elem),
+                               convert_list_to_snailfish(right_elem))
 
 
 def read_input_file(input_file):
@@ -87,9 +165,29 @@ if __name__ == '__main__':
     filename = "input/input18test.txt"
     snail_fish_numbers = read_input_file(filename)
 
-    for sfn in snail_fish_numbers:
-        print(sfn)
-        print(get_snailfish_level(sfn))
+    for sfn_list in snail_fish_numbers:
+        print(sfn_list)
+        sfn = convert_list_to_snailfish(sfn_list)
+        sfn.set_node_levels()
+        print(f'Snailfish Level: {sfn.get_nested_level()} ')
+        sfn.explode()
+        print(f'exploded: {sfn.inorderTraversal()}')
+        print(f'Snailfish Level: {sfn.get_nested_level()} ')
+        sfn.exploded = False
+        sfn.explode()
+        print(f'exploded: {sfn.inorderTraversal()}')
+        print(f'Snailfish Level: {sfn.get_nested_level()} ')
+        print('-------------')
 
+""""
 
-# [[6,[5,[4,[3,2]]]],1]
+[[3, [2, [8, 0]]], [9, [5, [4, [3, 2]]]]]
+[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]
+[[3,[2,[1,[7,3]]]],[6,[5,[4,3]]]]
+[[[[[9,8],1],2],3],4]
+[[[ [1,[9,8]]  ,2],3],4]
+[7,[6,[5,[4,[3,2]]]]]
+[[6,[5,[4,[3,2]]]],1]
+[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]
+
+"""

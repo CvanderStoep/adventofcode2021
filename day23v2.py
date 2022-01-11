@@ -68,6 +68,7 @@ def hallway_moves():
 
 
 def is_blocked(start, end, positions):
+
     for hallway in hallway_moves():
         if not hallway in positions:
             continue
@@ -166,6 +167,8 @@ def solve_puzzle(data):
 
 if __name__ == '__main__':
     # This is day 23 with a little bit of help from Google : - )
+    # https: // github.com / Thespyinthehole / AdventOfCode2021 / blob / master / Day23 / puzzle1.py
+
     filename = "input/input23b.txt"
     data = read_input_file(filename)
     solve_puzzle(data)
