@@ -54,6 +54,7 @@ class SnailFishNumber:
             output = [self.left.inorderTraversal(), self.right.inorderTraversal()]
         return output
 
+
     def inorderTraversal_print(self):
 
         if isinstance(self.left, int):
@@ -65,7 +66,15 @@ class SnailFishNumber:
         else:
             self.right.inorderTraversal_print()
 
+
     def explode(self):
+
+        #TODO:
+        # next integer to the right can be a SFN.left
+        # next integer to the left can be a SFN.right
+        # [[[[[1, 1], [2, 2]], [3, 3]], [4, 4]], [5, 5]]
+        # should explode to:
+        # [[[[3, 0], [5, 3]], [4, 4]], [5, 5]]
 
         if self.level == 3:
             root_node = self.parent.parent.parent
@@ -77,18 +86,21 @@ class SnailFishNumber:
                 pass
                 # print('already exploded')
             elif isinstance(self.left, SnailFishNumber):
-                # print('level to explode reached, left = snf')
+                print('level to explode reached, left = snf')
                 root_node.exploded = True
                 old_left = self.left.left
                 old_right = self.left.right
 
-                self.right = self.right + self.left.right
+                if isinstance(self.right, int):
+                    self.right = self.right + self.left.right
+                else:
+                    self.right.left += self.left.right
                 node_up = self.parent
                 found_number = False
                 for _ in range(3):
                     if isinstance(node_up.left, int):
                         node_up.left += self.left.left
-                        # print('hier1')
+                        print('hier1')
                         found_number = True
                         break
                     node_up = node_up.parent
@@ -99,8 +111,8 @@ class SnailFishNumber:
                         for _ in range(3):
                             if isinstance(root_node.right, int):
                                 root_node.right += old_left
-                                # print('hier11')
-                                # print(f'{self.left.position}')
+                                print('hier11')
+                                print(f'{self.left.position}')
                                 break
                             root_node = root_node.left
                 self.left = 0
@@ -109,7 +121,10 @@ class SnailFishNumber:
                 root_node.exploded = True
                 old_left = self.right.left
                 old_right = self.right.right
-                self.left = self.left + self.right.left
+                if isinstance(self.left, int):
+                    self.left = self.left + self.right.left
+                else:
+                    self.left.right += self.right.left
                 node_up = self.parent
                 found_number = False
                 for _ in range(3):
@@ -203,16 +218,18 @@ if __name__ == '__main__':
     filename = "input/input18test.txt"
     snail_fish_numbers = read_input_file(filename)
 
-    snailfish_sum = None
+    sfn = None
     for sfn_list in snail_fish_numbers:
         print(sfn_list)
-        sfn = convert_list_to_snailfish(sfn_list)
-        print(f'Snailfish Level: {sfn.get_nested_level()} ')
+        next_sfn = convert_list_to_snailfish(sfn_list)
+        print(f'Snailfish Level: {next_sfn.get_nested_level()} ')
 
-        snailfish_sum = Snailfish_addition(snailfish_sum, sfn)
+        sfn = Snailfish_addition(sfn, next_sfn)
+        print('snailfish after sum', sfn.inorderTraversal())
         # TODO
         # implement addition of Snailfish numbers
         sfn.set_node_levels()
+        # sfn.inorderTraversal_print()
 
         reduced = False  # keep exploding & splitting until done ==> reduced = True
         while not reduced:
@@ -229,22 +246,18 @@ if __name__ == '__main__':
             print(f'split: {sfn.inorderTraversal()}')
         print('-------------')
 
-    sfn1 = SnailFishNumber(1,1)
-    sfn1 = None
-    sfn2 = SnailFishNumber(2,2)
-    sum = Snailfish_addition(sfn1, sfn2)
-    print(sum.inorderTraversal())
-
 """"
     
 
-[[3, [2, [8, 0]]], [9, [5, [4, [3, 2]]]]]
-[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]
-[[3,[2,[1,[7,3]]]],[6,[5,[4,3]]]]
-[[[[[9,8],1],2],3],4]
-[[[ [1,[9,8]]  ,2],3],4]
-[7,[6,[5,[4,[3,2]]]]]
-[[6,[5,[4,[3,2]]]],1]
-[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]
+OK: [[3, [2, [8, 0]]], [9, [5, [4, [3, 2]]]]] -> [[3, [2, [8, 0]]], [9, [5, [7, 0]]]]
+OK: [[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]] -> [[3, [2, [8, 0]]], [9, [5, [7, 0]]]]
+OK: [[3,[2,[1,[7,3]]]],[6,[5,[4,3]]]] -> [[3, [2, [8, 0]]], [9, [5, [4, 3]]]]
+OK: [[[[[9,8],1],2],3],4] -> [[[[0, 9], 2], 3], 4]
+OK: [[[ [1,[9,8]]  ,2],3],4] -> [[[[0, 5], [5, 5]], 3], 4]
+OK: [7,[6,[5,[4,[3,2]]]]] -> [7, [6, [5, [7, 0]]]]
+OK: [[6,[5,[4,[3,2]]]],1] -> [[6, [5, [7, 0]]], 3]
+OK: [[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]] -> [[3, [2, [8, 0]]], [9, [5, [7, 0]]]]
+NOT OK: [[[[[1, 1], [2, 2]], [3, 3]], [4, 4]], [5, 5]] -> [[[[3, 0], [3, 3]], [4, 4]], [7, 5]]
+                                    should be:            [[[[3,0],[5,3]],[4,4]],[5,5]]
 
 """
