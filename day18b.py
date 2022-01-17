@@ -67,6 +67,8 @@ def reduce_explode(l):
     while l != s:
         s = l
         l, exploded = find_first_bracket_and_explode(l)
+        print('hier', l)
+
         if exploded:
             continue
         l = split_str(l)
@@ -85,7 +87,8 @@ def part1(v):
     for i, j in enumerate(v[1:]):
         l = add(l, j)
         l = reduce_explode(l)
-    return evaluate(l)
+    return l
+    # return evaluate(l)
 
 
 def part2(v):
@@ -93,6 +96,6 @@ def part2(v):
 
 
 print("part1 test output", part1(testlines))
-print("part1 my output", part1(lines))
-print("part2 test output", part2(testlines))
-print("part2 my output", part2(lines))
+# print("part1 my output", part1(lines))
+# print("part2 test output", part2(testlines))
+# print("part2 my output", part2(lines))

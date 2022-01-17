@@ -7,13 +7,14 @@ from collections import deque
 class SnailFishNumber:
     splitted = False
 
-    def __init__(self, left=None, right=None, level=0, parent=None, exploded=False, position=0):
+    def __init__(self, left=None, right=None, level=0, parent=None, exploded=False, position=0, path=""):
         self.left = left
         self.right = right
         self.level = level
         self.parent = parent
         self.exploded = exploded  # to track whether the sfn is already exploded; only one explosion/round
         self.position = position  # to track the horizontal position of the pair (needed to exclude edge cases)
+        self.path = path  # track the route from root to node
 
     def get_nested_level(self):
 
@@ -54,6 +55,31 @@ class SnailFishNumber:
             output = [self.left.inorderTraversal(), self.right.inorderTraversal()]
         return output
 
+    def set_path(self):
+        if isinstance(self.left, SnailFishNumber):
+            self.left.path = self.path + "L"
+            self.left.set_path()
+        if isinstance(self.right, SnailFishNumber):
+            self.right.path = self.path + "R"
+            self.right.set_path()
+
+    def clear_path(self):
+        if isinstance(self.left, SnailFishNumber):
+            self.left.path = ""
+            self.left.clear_path()
+        if isinstance(self.right, SnailFishNumber):
+            self.right.path = ""
+            self.right.clear_path()
+
+    def magnitude(self):
+        if isinstance(self.left, int) and isinstance(self.right, int):
+            return 3 * self.left + 2 * self.right
+        elif isinstance(self.left, int):
+            return 3 * self.left + 2 * self.right.magnitude()
+        elif isinstance(self.right, int):
+            return 3 * self.left.magnitude() + 2 * self.right
+        else:
+            return 3 * self.left.magnitude() + 2 * self.right.magnitude()
 
     def inorderTraversal_print(self):
 
@@ -66,15 +92,66 @@ class SnailFishNumber:
         else:
             self.right.inorderTraversal_print()
 
+    def set_right_node(self, root, path, left, right):
+        # to go to the start node: remove all trailing R and replace last L with R
+        # example: LRLR -> LRR
+        if path == "RRRR":
+            return
+        while path[-1] == "R":
+            path = path[:-1]
+        path = path[:-1]
+        path += "R"
+
+        current_node = root
+        while len(path) > 1:
+            direction = path[0]
+            if direction == "L":
+                current_node = current_node.left
+            else:
+                current_node = current_node.right
+            path = path[1:]
+        if isinstance(current_node.right, int):
+            current_node.right += right
+        elif isinstance(current_node.right.left, int):
+            current_node.right.left += right
+        elif isinstance(current_node.right.left.left, int):
+            current_node.right.left.left += right
+        elif isinstance(current_node.right.left.left.left, int):
+            current_node.right.left.left.left += right
+        else:
+            current_node.right.left.left.left.left += right
+
+    def set_left_node(self, root, path, left, right):
+        # to go to the start node: remove all trailing L and replace last R with L
+        # example: LRL -> LL
+        if path == "LLLL":
+            return
+        while path[-1] == "L":
+            path = path[:-1]
+        path = path[:-1]
+        path += "L"
+
+        current_node = root
+        while len(path) > 1:
+            direction = path[0]
+            if direction == "L":
+                current_node = current_node.left
+            else:
+                current_node = current_node.right
+            path = path[1:]
+            # print(f'pathL= {path}')
+        if isinstance(current_node.left, int):
+            current_node.left += left
+        elif isinstance(current_node.left.right, int):
+            current_node.left.right += left
+        elif isinstance(current_node.left.right.right, int):
+            current_node.left.right.right += left
+        elif isinstance(current_node.left.right.right.right, int):
+            current_node.left.right.right.right += left
+        else:
+            current_node.left.right.right.right.right += left
 
     def explode(self):
-
-        #TODO:
-        # next integer to the right can be a SFN.left
-        # next integer to the left can be a SFN.right
-        # [[[[[1, 1], [2, 2]], [3, 3]], [4, 4]], [5, 5]]
-        # should explode to:
-        # [[[[3, 0], [5, 3]], [4, 4]], [5, 5]]
 
         if self.level == 3:
             root_node = self.parent.parent.parent
@@ -86,65 +163,20 @@ class SnailFishNumber:
                 pass
                 # print('already exploded')
             elif isinstance(self.left, SnailFishNumber):
-                print('level to explode reached, left = snf')
                 root_node.exploded = True
-                old_left = self.left.left
-                old_right = self.left.right
-
-                if isinstance(self.right, int):
-                    self.right = self.right + self.left.right
-                else:
-                    self.right.left += self.left.right
-                node_up = self.parent
-                found_number = False
-                for _ in range(3):
-                    if isinstance(node_up.left, int):
-                        node_up.left += self.left.left
-                        print('hier1')
-                        found_number = True
-                        break
-                    node_up = node_up.parent
-                if self.left.position != -4:
-                    # Down from root node to find first integer on the left
-                    if isinstance(root_node.left, SnailFishNumber) and not found_number:
-                        root_node = root_node.left
-                        for _ in range(3):
-                            if isinstance(root_node.right, int):
-                                root_node.right += old_left
-                                print('hier11')
-                                print(f'{self.left.position}')
-                                break
-                            root_node = root_node.left
+                left_value = self.left.left
+                right_value = self.left.right
+                route_path = self.left.path
+                self.set_left_node(root_node, route_path, left_value, right_value)
+                self.set_right_node(root_node, route_path, left_value, right_value)
                 self.left = 0
             elif isinstance(self.right, SnailFishNumber):
-                # print('level to explode reached, right = sfn')
                 root_node.exploded = True
-                old_left = self.right.left
-                old_right = self.right.right
-                if isinstance(self.left, int):
-                    self.left = self.left + self.right.left
-                else:
-                    self.left.right += self.right.left
-                node_up = self.parent
-                found_number = False
-                for _ in range(3):
-                    if isinstance(node_up.right, int):
-                        node_up.right += self.right.right
-                        # print('hier2')
-                        found_number = True
-                        break
-                    node_up = node_up.parent
-                if self.right.position != 4:
-                    # Down from root node to find first integer on the right
-                    if isinstance(root_node.right, SnailFishNumber) and not found_number:
-                        root_node = root_node.right
-                        for _ in range(3):
-                            if isinstance(root_node.left, int):
-                                root_node.left += old_right
-                                # print('hier21')
-                                # print(f'{self.right.position}')
-                                break
-                            root_node = root_node.left
+                left_value = self.right.left
+                right_value = self.right.right
+                route_path = self.right.path
+                self.set_left_node(root_node, route_path, left_value, right_value)
+                self.set_right_node(root_node, route_path, left_value, right_value)
                 self.right = 0
             else:
                 print('level > 4?')
@@ -156,27 +188,30 @@ class SnailFishNumber:
 
     def split(self):
 
-        if not sfn.splitted:
-            # print(f'splitted: {sfn.splitted}')
+        if not SnailFishNumber.splitted:
             if isinstance(self.left, int):
                 if self.left >= 10:
                     new_left = int(self.left / 2)
                     new_right = round(self.left / 2 + 0.1)
-                    # print(f' left >= 10:  {self.left}')
                     self.left = SnailFishNumber(new_left, new_right)
-                    sfn.splitted = True
+                    SnailFishNumber.splitted = True
             else:
                 self.left.split()
+            if not SnailFishNumber.splitted:
+                if isinstance(self.right, int):
+                    if self.right >= 10:
+                        new_left = int(self.right / 2)
+                        new_right = round(self.right / 2 + 0.1)
+                        self.right = SnailFishNumber(new_left, new_right)
+                        SnailFishNumber.splitted = True
+                else:
+                    self.right.split()
 
-            if isinstance(self.right, int):
-                if self.right >= 10:
-                    new_left = int(self.right / 2)
-                    new_right = round(self.right / 2 + 0.1)
-                    # print(f'right >= 10: {self.right}')
-                    self.right = SnailFishNumber(new_left, new_right)
-                    sfn.splitted = True
-            else:
-                self.right.split()
+    def reset(self):
+        self.set_node_levels()
+        self.clear_path()
+        self.set_path()
+        SnailFishNumber.splitted = False
 
 
 def convert_list_to_snailfish(input_list):
@@ -205,6 +240,8 @@ def read_input_file(input_file):
 
 
 def Snailfish_addition(sfn1, sfn2):
+    if sfn1 is None and sfn2 is None:
+        return None
     if sfn1 is None:
         return sfn2
     if sfn2 is None:
@@ -226,25 +263,21 @@ if __name__ == '__main__':
 
         sfn = Snailfish_addition(sfn, next_sfn)
         print('snailfish after sum', sfn.inorderTraversal())
-        # TODO
-        # implement addition of Snailfish numbers
-        sfn.set_node_levels()
-        # sfn.inorderTraversal_print()
 
         reduced = False  # keep exploding & splitting until done ==> reduced = True
         while not reduced:
-            sfn.set_node_levels()
-            sfn.splitted = False
+            sfn.reset()
             while sfn.get_nested_level() >= 4:
                 sfn.exploded = False
-                print(f'Snailfish Level: {sfn.get_nested_level()} ')
                 sfn.explode()
                 print(f'exploded: {sfn.inorderTraversal()}')
+                sfn.reset()
             sfn.split()
-            if not sfn.splitted:
+            if not SnailFishNumber.splitted:
                 reduced = True
             print(f'split: {sfn.inorderTraversal()}')
         print('-------------')
+    print(f'part 1 - magnitude of final sum is {sfn.magnitude()} ')
 
 """"
     
@@ -257,7 +290,7 @@ OK: [[[ [1,[9,8]]  ,2],3],4] -> [[[[0, 5], [5, 5]], 3], 4]
 OK: [7,[6,[5,[4,[3,2]]]]] -> [7, [6, [5, [7, 0]]]]
 OK: [[6,[5,[4,[3,2]]]],1] -> [[6, [5, [7, 0]]], 3]
 OK: [[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]] -> [[3, [2, [8, 0]]], [9, [5, [7, 0]]]]
-NOT OK: [[[[[1, 1], [2, 2]], [3, 3]], [4, 4]], [5, 5]] -> [[[[3, 0], [3, 3]], [4, 4]], [7, 5]]
+OK: [[[[[1, 1], [2, 2]], [3, 3]], [4, 4]], [5, 5]] -> [[[[3, 0], [3, 3]], [4, 4]], [7, 5]]
                                     should be:            [[[[3,0],[5,3]],[4,4]],[5,5]]
 
 """
