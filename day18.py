@@ -1,7 +1,4 @@
 import ast
-import copy
-import itertools
-from collections import deque
 
 
 class SnailFishNumber:
@@ -24,6 +21,7 @@ class SnailFishNumber:
             return 1 + self.right.get_nested_level()
         elif isinstance(self.right, int):
             return 1 + self.left.get_nested_level()
+
         else:
             return 1 + max(self.left.get_nested_level(), self.right.get_nested_level())
 
@@ -44,7 +42,6 @@ class SnailFishNumber:
             self.right.set_node_levels(self.right.level)
 
     def inorderTraversal(self):
-        output = []
         if isinstance(self.left, int) and isinstance(self.right, int):
             output = [self.left, self.right]
         elif isinstance(self.left, int):
@@ -80,17 +77,6 @@ class SnailFishNumber:
             return 3 * self.left.magnitude() + 2 * self.right
         else:
             return 3 * self.left.magnitude() + 2 * self.right.magnitude()
-
-    def inorderTraversal_print(self):
-
-        if isinstance(self.left, int):
-            print(self.left, end=' , ')
-        else:
-            self.left.inorderTraversal_print()
-        if isinstance(self.right, int):
-            print(self.right, end=' , ')
-        else:
-            self.right.inorderTraversal_print()
 
     def set_right_node(self, root, path, left, right):
         # to go to the start node: remove all trailing R and replace last L with R
