@@ -1,4 +1,5 @@
 import ast
+import itertools
 
 
 class SnailFishNumber:
@@ -238,7 +239,7 @@ def Snailfish_addition(sfn1, sfn2):
 
 if __name__ == '__main__':
     # This is day 18
-    filename = "input/input18test.txt"
+    filename = "input/input18.txt"
     snail_fish_numbers = read_input_file(filename)
 
     sfn = None
@@ -264,6 +265,32 @@ if __name__ == '__main__':
             print(f'split: {sfn.inorderTraversal()}')
         print('-------------')
     print(f'part 1 - magnitude of final sum is {sfn.magnitude()} ')
+
+    max_magnitude = 0
+    for n1, n2 in itertools.permutations(range(len(snail_fish_numbers)),2):
+        sfn1 = snail_fish_numbers[n1]
+        sfn2 = snail_fish_numbers[n2]
+        sfn1 = convert_list_to_snailfish(sfn1)
+        sfn2 = convert_list_to_snailfish(sfn2)
+        sfn = Snailfish_addition(sfn1, sfn2)
+        reduced = False  # keep exploding & splitting until done ==> reduced = True
+        while not reduced:
+            sfn.reset()
+            while sfn.get_nested_level() >= 4:
+                sfn.exploded = False
+                sfn.explode()
+                print(f'exploded: {sfn.inorderTraversal()}')
+                sfn.reset()
+            sfn.split()
+            if not SnailFishNumber.splitted:
+                reduced = True
+            print(f'split: {sfn.inorderTraversal()}')
+        print('-------------')
+        sum_magnitude = sfn.magnitude()
+        print(f'part 2 - magnitude of two sum is {sum_magnitude} ')
+        max_magnitude = sum_magnitude if sum_magnitude > max_magnitude else max_magnitude
+
+    print(f'part 2 - maximum magnitude of two sum is {max_magnitude} ')
 
 """"
     
