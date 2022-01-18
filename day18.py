@@ -239,7 +239,7 @@ def Snailfish_addition(sfn1, sfn2):
 
 if __name__ == '__main__':
     # This is day 18
-    filename = "input/input18.txt"
+    filename = "input/input18test.txt"
     snail_fish_numbers = read_input_file(filename)
 
     sfn = None
