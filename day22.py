@@ -25,18 +25,18 @@ def reboot(reboot_step, cuboid):
 
     cuboid_off = set()
     switch = reboot_step[0]
-    # xmin = max(int(reboot_step[1][0]), -50)
-    # xmax = min(int(reboot_step[1][1]), 50)
-    # ymin = max(int(reboot_step[2][0]), -50)
-    # ymax = min(int(reboot_step[2][1]), 50)
-    # zmin = max(int(reboot_step[3][0]), -50)
-    # zmax = min(int(reboot_step[3][1]), 50)
-    xmin = int(reboot_step[1][0])
-    xmax = int(reboot_step[1][1])
-    ymin = int(reboot_step[2][0])
-    ymax = int(reboot_step[2][1])
-    zmin = int(reboot_step[3][0])
-    zmax = int(reboot_step[3][1])
+    xmin = max(int(reboot_step[1][0]), -50)
+    xmax = min(int(reboot_step[1][1]), 50)
+    ymin = max(int(reboot_step[2][0]), -50)
+    ymax = min(int(reboot_step[2][1]), 50)
+    zmin = max(int(reboot_step[3][0]), -50)
+    zmax = min(int(reboot_step[3][1]), 50)
+    # xmin = int(reboot_step[1][0])
+    # xmax = int(reboot_step[1][1])
+    # ymin = int(reboot_step[2][0])
+    # ymax = int(reboot_step[2][1])
+    # zmin = int(reboot_step[3][0])
+    # zmax = int(reboot_step[3][1])
     print(f'xmin, xmax, ymin, ymax, zmin, zmax [{xmin} {xmax}] [{ymin} {ymax}] [{zmin} {zmax}]')
 
     if switch == "on":
@@ -51,7 +51,6 @@ def reboot(reboot_step, cuboid):
                     cuboid_off.add((x,y,z))
 
     cuboid = cuboid.difference(cuboid_off)
-    # print(f'cuboid length: {len(cuboid)}')
     return cuboid
 
 
