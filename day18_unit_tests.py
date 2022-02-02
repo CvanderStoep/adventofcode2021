@@ -16,6 +16,7 @@ class testDay18(unittest.TestCase):
         sfn.split()
         self.assertEqual(sfn.inorderTraversal(), [[5, 5], [5, 5]])
 
+    def test_convert_list_to_snailfish(self):
         sfn = day18.convert_list_to_snailfish([[[[[9,8],1],2],3],4])
         sfn.reset()
         sfn.explode()
